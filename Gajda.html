@@ -293,7 +293,7 @@ body{font-family:'Space Grotesk',sans-serif;background:#0a0a0a}
 /* ── S4 ── */
 #s4{background:#1a0533;text-align:center;overflow:visible}
 .s4-title{font-family:'Bangers',cursive;font-size:clamp(2rem,8vw,4.5rem);line-height:.92;color:#fff;letter-spacing:.03em;text-shadow:4px 4px 0 #a855f7,0 0 40px #a855f755;margin-bottom:12px}
-.photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:min(96vw,680px);width:100%;margin-bottom:18px}
+.photos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:min(88vw,580px);width:100%;margin-bottom:18px}
 .photo-card{aspect-ratio:4/5;background-size:cover;background-position:center;border-radius:10px;border:3px solid transparent;transition:transform .2s}
 .photo-card:nth-child(1){transform:rotate(-2.5deg);border-color:#ff006f}
 .photo-card:nth-child(2){transform:rotate(1.5deg);border-color:#ff9500;margin-top:14px}
@@ -319,6 +319,35 @@ body{font-family:'Space Grotesk',sans-serif;background:#0a0a0a}
 @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 
 #konfetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:9999}
+
+/* ── NAV HINT ── */
+#nav-hint{
+  position:fixed;bottom:64px;left:50%;transform:translateX(-50%);
+  z-index:250;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  transition:opacity .4s;
+}
+#nav-hint .hint-arrows{
+  display:flex;align-items:center;gap:16px;
+}
+#nav-hint .hint-arrow{
+  font-family:'Playfair Display',serif;
+  font-size:1.4rem;color:#c9aa71;
+  animation:hintPulse 1.4s ease-in-out infinite;
+}
+#nav-hint .hint-arrow.left{ animation-delay:.15s; }
+#nav-hint .hint-label{
+  font-family:'Playfair Display',serif;
+  font-style:italic;
+  font-size:.72rem;letter-spacing:.16rem;
+  color:#c9aa71;
+  text-transform:lowercase;
+  animation:hintPulse 1.4s ease-in-out infinite;
+}
+@keyframes hintPulse{
+  0%,100%{opacity:.35}
+  50%{opacity:1}
+}
 </style>
 </head>
 <body>
@@ -330,6 +359,14 @@ body{font-family:'Space Grotesk',sans-serif;background:#0a0a0a}
   <button class="nav-btn" id="btn-prev" onclick="go(-1)" disabled title="Wstecz">&#8592;</button>
   <div id="nav-dots"></div>
   <button class="nav-btn" id="btn-next" onclick="go(1)" title="Dalej">&#8594;</button>
+
+<!-- NAV HINT -->
+<div id="nav-hint">
+  <div class="hint-arrows">
+    <span class="hint-arrow left" id="hint-left" style="display:none">&#8592;</span>
+    <span class="hint-arrow right" id="hint-right">&#8594;</span>
+  </div>
+  <span class="hint-label" id="hint-label">klik lub swipe!</span>
 </div>
 
 <!-- ══ SLIDE 1 ══ -->
@@ -505,9 +542,9 @@ body{font-family:'Space Grotesk',sans-serif;background:#0a0a0a}
 <section class="slide" id="s4">
   <h2 class="s4-title">DAWAJ NA<br>WESELNY MELANŻ!</h2>
   <div class="photos-grid">
-    <div class="photo-card" id="foto1"></div>
-    <div class="photo-card" id="foto2"></div>
-    <div class="photo-card" id="foto3"></div>
+    <div class="photo-card" id="foto1" onclick="window.open('https://lh3.googleusercontent.com/d/1LvpC8FAwRw7xNyjBAcOWhm4bdb8svVzo','_blank')" style="cursor:pointer"></div>
+    <div class="photo-card" id="foto2" onclick="window.open('https://lh3.googleusercontent.com/d/1fQNO4Gs-A7h5ve0hzLS7PUl2Hmjzy2Di','_blank')" style="cursor:pointer"></div>
+    <div class="photo-card" id="foto3" onclick="window.open('https://lh3.googleusercontent.com/d/1DU9F1YNFX8jfWV51QEi59psSNZCvJ-9J','_blank')" style="cursor:pointer"></div>
   </div>
   <p class="playlist-label">🎵 Zanim przyjdziesz…</p>
   <p style="font-size:1.6rem;color:#ffffffcc;animation:arrowBounce 1s ease-in-out infinite alternate;margin-bottom:8px">↓</p>
@@ -557,6 +594,15 @@ function updateNav() {
   document.querySelectorAll('.ndot').forEach((d,i) => d.classList.toggle('active', i===cur));
   document.getElementById('btn-prev').disabled = cur === 0;
   document.getElementById('btn-next').disabled = cur === IDS.length - 1;
+  // Update hint
+  const hLeft  = document.getElementById('hint-left');
+  const hRight = document.getElementById('hint-right');
+  const hLabel = document.getElementById('hint-label');
+  if (hLeft && hRight && hLabel) {
+    hLeft.style.display  = cur > 0 ? 'inline' : 'none';
+    hRight.style.display = cur < IDS.length - 1 ? 'inline' : 'none';
+    hLabel.style.display = cur === 0 ? 'inline' : 'none';
+  }
 }
 
 function go(dir) { goTo(cur + dir); }
@@ -574,6 +620,16 @@ function goTo(next) {
   toEl.classList.add('active');
   cur = next;
   updateNav();
+  // Update nav hint per slide
+  const IDS_LEN = IDS.length;
+  const hLeft  = document.getElementById('hint-left');
+  const hRight = document.getElementById('hint-right');
+  const hLabel = document.getElementById('hint-label');
+  if (hLeft && hRight && hLabel) {
+    hLeft.style.display  = cur > 0 ? 'inline' : 'none';
+    hRight.style.display = cur < IDS_LEN - 1 ? 'inline' : 'none';
+    hLabel.style.display = cur === 0 ? 'inline' : 'none';
+  }
 
   if (IDS[cur] === 's2') startAutoKonfetti();
   // Reset RSVP button whenever leaving s5

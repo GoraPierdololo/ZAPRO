@@ -320,48 +320,33 @@ body{font-family:'Space Grotesk',sans-serif;background:#0a0a0a}
 
 #konfetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:9999}
 
-/* ── SWIPE HINT ── */
-#swipe-hint{
-  position:fixed;bottom:70px;left:50%;transform:translateX(-50%);
-  display:flex;flex-direction:column;align-items:center;gap:6px;
-  z-index:200;pointer-events:none;
-  animation:hintFadeOut 1s 3.5s ease forwards;
+/* ── NAV HINT ── */
+#nav-hint{
+  position:fixed;bottom:64px;left:50%;transform:translateX(-50%);
+  z-index:250;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  transition:opacity .4s;
 }
-.swipe-hand{
-  font-size:2rem;
-  animation:handSwipe 1.2s ease-in-out infinite;
+#nav-hint .hint-arrows{
+  display:flex;align-items:center;gap:16px;
 }
-.swipe-arrow{
-  display:flex;gap:4px;align-items:center;
+#nav-hint .hint-arrow{
+  font-family:'Playfair Display',serif;
+  font-size:1.4rem;color:#c9aa71;
+  animation:hintPulse 1.4s ease-in-out infinite;
 }
-.swipe-arrow span{
-  display:block;
-  width:10px;height:10px;
-  border-right:2.5px solid #c9aa71;
-  border-bottom:2.5px solid #c9aa71;
-  transform:rotate(-45deg);
-  animation:arrowFade 1.2s ease-in-out infinite;
+#nav-hint .hint-arrow.left{ animation-delay:.15s; }
+#nav-hint .hint-label{
+  font-family:'Playfair Display',serif;
+  font-style:italic;
+  font-size:.72rem;letter-spacing:.16rem;
+  color:#c9aa71;
+  text-transform:lowercase;
+  animation:hintPulse 1.4s ease-in-out infinite;
 }
-.swipe-arrow span:nth-child(1){opacity:.3;animation-delay:0s}
-.swipe-arrow span:nth-child(2){opacity:.6;animation-delay:.15s}
-.swipe-arrow span:nth-child(3){opacity:1;animation-delay:.3s}
-.swipe-text{
-  font-family:'Space Grotesk',sans-serif;
-  font-size:.65rem;letter-spacing:.18rem;text-transform:uppercase;
-  color:#c9aa71;opacity:.8;
-}
-@keyframes handSwipe{
-  0%{transform:translateX(0)}
-  40%{transform:translateX(18px)}
-  60%{transform:translateX(18px)}
-  100%{transform:translateX(0)}
-}
-@keyframes arrowFade{
-  0%,100%{opacity:.2}
+@keyframes hintPulse{
+  0%,100%{opacity:.35}
   50%{opacity:1}
-}
-@keyframes hintFadeOut{
-  to{opacity:0;pointer-events:none}
 }
 </style>
 </head>
@@ -374,6 +359,14 @@ body{font-family:'Space Grotesk',sans-serif;background:#0a0a0a}
   <button class="nav-btn" id="btn-prev" onclick="go(-1)" disabled title="Wstecz">&#8592;</button>
   <div id="nav-dots"></div>
   <button class="nav-btn" id="btn-next" onclick="go(1)" title="Dalej">&#8594;</button>
+
+<!-- NAV HINT -->
+<div id="nav-hint">
+  <div class="hint-arrows">
+    <span class="hint-arrow left" id="hint-left" style="display:none">&#8592;</span>
+    <span class="hint-arrow right" id="hint-right">&#8594;</span>
+  </div>
+  <span class="hint-label" id="hint-label">klik lub swipe!</span>
 </div>
 
 <!-- ══ SLIDE 1 ══ -->
@@ -549,9 +542,9 @@ body{font-family:'Space Grotesk',sans-serif;background:#0a0a0a}
 <section class="slide" id="s4">
   <h2 class="s4-title">DAWAJCIE NA<br>WESELNY MELANŻ!</h2>
   <div class="photos-grid">
-    <div class="photo-card" id="foto1"></div>
-    <div class="photo-card" id="foto2"></div>
-    <div class="photo-card" id="foto3"></div>
+    <div class="photo-card" id="foto1" onclick="window.open('https://lh3.googleusercontent.com/d/1TdlitNUnpwup53d1MHL6F69ZegDbwfQq','_blank')" style="cursor:pointer"></div>
+    <div class="photo-card" id="foto2" onclick="window.open('https://lh3.googleusercontent.com/d/1RojeWI-iUI5e5GZhKSomMj08JNLbCGtP','_blank')" style="cursor:pointer"></div>
+    <div class="photo-card" id="foto3" onclick="window.open('https://lh3.googleusercontent.com/d/1Rd6QjKFh_BKetxI4dI7BJ4v5LNop5h_4','_blank')" style="cursor:pointer"></div>
   </div>
   <p class="playlist-label">🎵 Zanim przyjdziecie…</p>
   <p style="font-size:1.6rem;color:#ffffffcc;animation:arrowBounce 1s ease-in-out infinite alternate;margin-bottom:8px">↓</p>
@@ -601,6 +594,15 @@ function updateNav() {
   document.querySelectorAll('.ndot').forEach((d,i) => d.classList.toggle('active', i===cur));
   document.getElementById('btn-prev').disabled = cur === 0;
   document.getElementById('btn-next').disabled = cur === IDS.length - 1;
+  // Update hint
+  const hLeft  = document.getElementById('hint-left');
+  const hRight = document.getElementById('hint-right');
+  const hLabel = document.getElementById('hint-label');
+  if (hLeft && hRight && hLabel) {
+    hLeft.style.display  = cur > 0 ? 'inline' : 'none';
+    hRight.style.display = cur < IDS.length - 1 ? 'inline' : 'none';
+    hLabel.style.display = cur === 0 ? 'inline' : 'none';
+  }
 }
 
 function go(dir) { goTo(cur + dir); }
@@ -618,9 +620,16 @@ function goTo(next) {
   toEl.classList.add('active');
   cur = next;
   updateNav();
-  // Hide swipe hint on first navigation
-  const hint = document.getElementById('swipe-hint');
-  if (hint) hint.style.display = 'none';
+  // Update nav hint per slide
+  const IDS_LEN = IDS.length;
+  const hLeft  = document.getElementById('hint-left');
+  const hRight = document.getElementById('hint-right');
+  const hLabel = document.getElementById('hint-label');
+  if (hLeft && hRight && hLabel) {
+    hLeft.style.display  = cur > 0 ? 'inline' : 'none';
+    hRight.style.display = cur < IDS_LEN - 1 ? 'inline' : 'none';
+    hLabel.style.display = cur === 0 ? 'inline' : 'none';
+  }
 
   if (IDS[cur] === 's2') startAutoKonfetti();
   // Reset RSVP button whenever leaving s5
