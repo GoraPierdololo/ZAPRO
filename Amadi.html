@@ -330,9 +330,10 @@ body{font-family:'Space Grotesk',sans-serif;background:#0a0a0a}
 #nav-hint .hint-arrows{
   display:flex;align-items:center;gap:16px;
 }
+#nav-hint{--hint-col:#5a4430}
 #nav-hint .hint-arrow{
   font-family:'Playfair Display',serif;
-  font-size:1.4rem;color:#c9aa71;
+  font-size:1.4rem;color:var(--hint-col);
   animation:hintPulse 1.4s ease-in-out infinite;
 }
 #nav-hint .hint-arrow.left{ animation-delay:.15s; }
@@ -340,7 +341,7 @@ body{font-family:'Space Grotesk',sans-serif;background:#0a0a0a}
   font-family:'Playfair Display',serif;
   font-style:italic;
   font-size:.72rem;letter-spacing:.16rem;
-  color:#c9aa71;
+  color:var(--hint-col);
   text-transform:lowercase;
   animation:hintPulse 1.4s ease-in-out infinite;
 }
@@ -598,10 +599,15 @@ function updateNav() {
   const hLeft  = document.getElementById('hint-left');
   const hRight = document.getElementById('hint-right');
   const hLabel = document.getElementById('hint-label');
-  if (hLeft && hRight && hLabel) {
+  const hHint  = document.getElementById('nav-hint');
+  if (hLeft && hRight && hLabel && hHint) {
     hLeft.style.display  = cur > 0 ? 'inline' : 'none';
     hRight.style.display = cur < IDS.length - 1 ? 'inline' : 'none';
     hLabel.style.display = cur === 0 ? 'inline' : 'none';
+    // Color based on slide background
+    const darkSlides = ['s2','s4'];
+    const col = darkSlides.includes(IDS[cur]) ? '#c9aa71' : '#5a4430';
+    hHint.style.setProperty('--hint-col', col);
   }
 }
 
@@ -622,14 +628,7 @@ function goTo(next) {
   updateNav();
   // Update nav hint per slide
   const IDS_LEN = IDS.length;
-  const hLeft  = document.getElementById('hint-left');
-  const hRight = document.getElementById('hint-right');
-  const hLabel = document.getElementById('hint-label');
-  if (hLeft && hRight && hLabel) {
-    hLeft.style.display  = cur > 0 ? 'inline' : 'none';
-    hRight.style.display = cur < IDS_LEN - 1 ? 'inline' : 'none';
-    hLabel.style.display = cur === 0 ? 'inline' : 'none';
-  }
+  // hint updated via updateNav()
 
   if (IDS[cur] === 's2') startAutoKonfetti();
   // Reset RSVP button whenever leaving s5
